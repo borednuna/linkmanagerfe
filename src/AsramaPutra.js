@@ -8,20 +8,30 @@ function Layout() {
     const [field, setField] = useState({
         string: "",
         link: "",
-        collection: "asramaputra"
     });
+    const [loaded, setLoaded] = useState(false);
 
     const fetchAll = () => {
-        const url = "https://linkmanager.vercel.app/getAll/asramaputra";
+        const url = "https://linkmanager.vercel.app/fetchAP";
         fetch(url)
         .then((response) => response.json())
-        .then((data) => setData(data))
+        .then((data) => {
+            setData(data);
+            const mappedArray = Object.keys(data).map(key => {
+                return {
+                  key: key,
+                  value: data[key]
+                };
+              });
+            setData(mappedArray);
+            setLoaded(true);
+        })
         .catch((error) => console.error('Error fetching data:', error));
     }
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        const url = "https://linkmanager.vercel.app/addLink";
+        const url = "https://linkmanager.vercel.app/addAP";
         fetch(url, {
             method: "POST",
             headers: {
@@ -29,14 +39,16 @@ function Layout() {
             },
             body: JSON.stringify(field),
         })
-        .then((response) => response.json())
+        .then((response) => {
+            response.json();
+            fetchAll();
+        })
         .then((data) => {
             console.log("Success:", data);
         })
         .catch((error) => {
             console.error("Error:", error);
         });
-        fetchAll();
     };
 
     const handleChange = (event) => {
@@ -47,7 +59,7 @@ function Layout() {
     };
 
     const handleDelete = (id) => {
-        const url = "https://linkmanager.vercel.app/deleteLink/asramaputra/" + id;
+        const url = "https://linkmanager.vercel.app/deleteAP/" + id;
         console.log(url);
         fetch(url, {
             method: "DELETE",
@@ -55,29 +67,33 @@ function Layout() {
                 "Content-Type": "application/json",
             },
         })
-        .then((response) => console.log(response))
+        .then((response) => {
+            console.log(response);
+            fetchAll();
+        })
         .catch((error) => {
             console.error("Error:", error);
         });
     };
 
     useEffect(() => {
-        fetchAll();
+        if (!loaded) fetchAll();
+        console.log(data);
     }, [data]);
 
     return (
         <div className="Layout">
             {/* <div className="bg-ap"></div> */}
-            <h1>LINK PENTINGGGGG ASKSKSKS</h1>
+             <h1>LINK PENTINGGGGG ASKSKSKS</h1>
             {data === undefined || data.length === 0 ? (
                 null
             ) : (
                 data.map((item) => (
                     <div className="items">
                         <div className="link">
-                            <a href={item.data.link}>{item.data.string}</a>
+                            <a href={item.value.link}>{item.value.string}</a>
                         </div>
-                        <div className="delete" onClick={() => handleDelete(item.id)}>
+                        <div className="delete" onClick={() => handleDelete(item.key)}>
                             <img src={DelIcon} alt="delete" />
                         </div>
                     </div>
